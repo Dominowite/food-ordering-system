@@ -1,0 +1,212 @@
+/* ฟอนต์และการตั้งค่าพื้นฐาน */
+body {
+    font-family: 'Kanit', sans-serif; /* ตัวอย่างฟอนต์ภาษาไทย */
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa; /* ใช้สีพื้นหลังที่ดูสะอาด */
+}
+
+/* ส่วนหัว */
+.hero {
+    background-image: url('../images/header.png'); /* ใส่รูปภาพพื้นหลัง */
+    background-size: cover;
+    background-position: center;
+    min-height: 400px; /* ปรับขนาดตามต้องการ */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    padding-top: 3rem;
+}
+
+.hero img {
+    margin-top: 20px;
+    border-radius: 60px;
+}
+
+/* การปรับแต่งสำหรับหน้าจอมือถือ */
+@media (max-width: 768px) {
+    .navbar-brand img {
+        width: 25px; /* ลดขนาดโลโก้ในหน้าจอขนาดเล็ก */
+        height: 25px;
+    }
+
+    .navbar-nav {
+        margin-top: 10px; /* เพิ่มระยะห่างเหนือเมนูบนมือถือ */
+    }
+
+    .nav-link {
+        padding: 8px 0; /* ลดการเว้นวรรคเพื่อการจัดวางที่ดีกว่า */
+        font-size: 14px; /* ขนาดตัวอักษรเล็กลงเล็กน้อย */
+    }
+
+    .fa-shopping-cart {
+        font-size: 16px; /* ขนาดไอคอนใหญ่ขึ้นเล็กน้อย */
+    }
+
+    .menu-buttons {
+        margin-top: 20px;
+        flex-direction: column; /* เปลี่ยนการจัดเรียงปุ่มเป็นแนวตั้ง */
+    }
+
+    .carousel-inner .carousel-item {
+        height: auto; /* ปรับความสูงอัตโนมัติ */
+    }
+
+    .carousel-inner .col-md-4 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    .card {
+        margin: 10px;
+    }
+
+    .carousel {
+        margin-top: 3rem;
+    }
+
+    .btn__order {
+        margin-top: 20px;
+        width: 50px;
+    }
+
+    .best__menu {
+        margin-top: 2rem;
+    }
+}
+
+/* ปุ่มเมนู */
+.menu-buttons {
+    display: flex;
+    flex-wrap: wrap; /* ให้ปุ่มสามารถย่อและขยายได้ */
+    align-items: stretch; /* จัดปุ่มให้อยู่ตรงกลางและให้มีความสูงเท่ากัน */
+    gap: 15px; /* ระยะห่างระหว่างปุ่ม */
+    margin-bottom: 20px; /* เพิ่มระยะห่างด้านล่าง */
+}
+
+.menu-buttons .btn {
+    flex-grow: 1; /* ปรับปุ่มให้ขยายเท่ากัน */
+    flex-basis: 0; /* ปรับขนาดปุ่มให้สมดุล */
+    padding: 15px 20px; /* เพิ่มขนาดปุ่ม */
+    font-size: 18px; /* เพิ่มขนาดตัวอักษร */
+    border-radius: 10px; /* ปุ่มมน */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* เพิ่มเงาให้ปุ่ม */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%; /* ทำให้ปุ่มมีความสูงเต็มที่เท่ากัน */
+}
+
+/* สีปุ่ม */
+.menu-buttons .btn-primary {
+    background-color: #FF5733; /* สีส้ม */
+    border-color: #FF5733;
+}
+
+.menu-buttons .btn-secondary {
+    background-color: #4CAF50; /* สีเขียว */
+    border-color: #4CAF50;
+}
+
+.menu-buttons .btn-success {
+    background-color: #008CBA; /* สีฟ้า */
+    border-color: #008CBA;
+}
+
+/* ไอคอน */
+.menu-buttons i {
+    margin-right: 10px; /* ระยะห่างระหว่างไอคอนกับข้อความ */
+}
+
+/* ปรับแต่งสำหรับหน้าจอใหญ่ */
+@media (min-width: 768px) {
+    .menu-buttons {
+        flex-direction: row; /* จัดเรียงปุ่มเป็นแนวนอนบนหน้าจอใหญ่ */
+        justify-content: center; /* จัดปุ่มให้อยู่ตรงกลาง */
+    }
+
+    .menu-buttons .btn {
+        width: auto; /* ปรับความกว้างปุ่มอัตโนมัติบนหน้าจอใหญ่ */
+    }
+}
+
+/* Menu Styling */
+#menu {
+    background-color: #f8f9fa; /* หรือสีพื้นหลังอื่นๆ ที่คุณต้องการ */
+}
+
+.menu-category-title {
+    color: #007bff; /* หรือสีที่เข้ากับธีมร้านของคุณ */
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.menu-item {
+    border-bottom: 1px dotted #eee;
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+}
+
+.menu-item h4 {
+    font-weight: bold;
+}
+
+.price {
+    font-weight: bold;
+    color: #dc3545; /* หรือสีที่โดดเด่น */
+}
+
+/* Image Styling */
+.menu-item-image {
+    width: 100%; /* ให้รูปภาพเต็มความกว้างของ container */
+    max-width: 200px; /* กำหนดความกว้างสูงสุด เพื่อไม่ให้รูปใหญ่เกินไป */
+    height: auto; /* ให้ความสูงปรับอัตโนมัติตามสัดส่วน */
+    object-fit: cover; /* ทำให้รูปภาพครอบคลุมพื้นที่ทั้งหมด โดยยังคงสัดส่วน */
+    margin-bottom: 10px; /* เพิ่มระยะห่างระหว่างรูปภาพกับข้อความ */
+}
+
+
+body {
+    font-family: 'Kanit', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: #f0f0f0;
+}
+.register-container {
+    background-color: #fff;
+    padding: 3rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 400px;
+}
+.register-container h2 {
+    color: #333;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+.form-label {
+    font-weight: bold;
+}
+.form-control {
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+}
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+    border-radius: 8px;
+}
+.btn-primary:hover {
+    background-color: #0069d9;
+    border-color: #0062cc;
+}
