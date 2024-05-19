@@ -1,3 +1,14 @@
+<?php
+include 'includes/db.php';
+include 'includes/functions.php';
+
+$table_id = isset($_GET['table_id']) ? intval($_GET['table_id']) : 0;
+
+if ($table_id <= 0) {
+    // ถ้าไม่มี table_id หรือ table_id ไม่ถูกต้อง
+    die("Invalid table ID");
+}
+?>
 <!DOCTYPE html>
 <html lang="th">
 
@@ -22,11 +33,11 @@
     <!-- Menu Section -->
     <section class="container mt-5">
         <div class="table">
-            <h1>โต๊ะ: 1</h1> 
+            <h1>โต๊ะ: <?php echo htmlspecialchars($table_id); ?></h1> 
         </div>
 
         <div class="menu-buttons my-4 text-center">
-            <a href="menu.php" class="btn btn-primary mx-2">
+            <a href="menu.php?table_id=<?php echo htmlspecialchars($table_id); ?>" class="btn btn-primary mx-2">
                 <i class="fas fa-utensils"></i> สั่งอาหาร
             </a>
             <button class="btn btn-secondary mx-2">
