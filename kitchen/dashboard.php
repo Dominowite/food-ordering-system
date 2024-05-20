@@ -9,8 +9,14 @@ if (!isset($_SESSION['kitchen_logged_in']) && !isset($_SESSION['admin_logged_in'
     exit();
 }
 
-// ดึงคำสั่งซื้อที่ยังไม่ได้ทำ
-$pendingOrders = $pdo->query("SELECT * FROM orders WHERE status IN ('pending', 'preparing') ORDER BY order_time DESC")->fetchAll(); // เรียงตามเวลาล่าสุด
+// ดึงคำสั่งซื้อที่ยังไม่ได้ทำ พร้อมหมายเลขโต๊ะ
+$pendingOrders = $pdo->query("
+    SELECT o.*, t.table_number 
+    FROM orders o 
+    JOIN tables t ON o.table_id = t.id 
+    WHERE o.status IN ('pending', 'preparing') 
+    ORDER BY o.order_time DESC
+")->fetchAll(); // เรียงตามเวลาล่าสุด
 
 // ฟังก์ชันสำหรับแสดงสถานะคำสั่งซื้อ
 function getOrderStatusText($status) {
@@ -39,12 +45,10 @@ function getOrderStatusText($status) {
         body {
             font-family: 'Kanit', sans-serif;
         }
-
         .card {
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
-
         .status-pending { color: #dc3545; }
         .status-preparing { color: #ffc107; }
         .status-completed { color: #28a745; }
@@ -55,9 +59,9 @@ function getOrderStatusText($status) {
         <h1 class="text-center mb-4">แดชบอร์ดครัว</h1>
 
         <?php if (isset($_SESSION['admin_logged_in'])): ?>
-            <div class="alert alert-info text-center">เข้าสู่ระบบโดย: <?php echo htmlspecialchars($_SESSION['username']); ?> (แอดมิน)</div>
+            <div class="alert alert-info text-center">เข้าสู่ระบบโดย: <?php echo htmlspecialchars($_SESSION['username'] ?? ''); ?> (แอดมิน)</div>
         <?php elseif (isset($_SESSION['kitchen_logged_in'])): ?>
-            <div class="alert alert-info text-center">เข้าสู่ระบบโดย: <?php echo htmlspecialchars($_SESSION['username']); ?> (ครัว)</div>
+            <div class="alert alert-info text-center">เข้าสู่ระบบโดย: <?php echo htmlspecialchars($_SESSION['username'] ?? ''); ?> (ครัว)</div>
         <?php endif; ?>
 
         <div class="card">
@@ -70,7 +74,7 @@ function getOrderStatusText($status) {
                         <thead>
                             <tr>
                                 <th>หมายเลข</th>
-                                <th>โต๊ะ</th>
+                                <th>หมายเลขโต๊ะ</th>
                                 <th>เวลา</th>
                                 <th>รายการ</th> 
                                 <th>สถานะ</th>
@@ -81,12 +85,17 @@ function getOrderStatusText($status) {
                             <?php foreach ($pendingOrders as $order) { ?>
                                 <tr>
                                     <td><?php echo $order['id']; ?></td>
-                                    <td><?php echo $order['table_id']; ?></td>
+                                    <td><?php echo $order['table_number']; ?></td>
                                     <td><?php echo $order['order_time']; ?></td>
                                     <td>
                                         <?php 
-                                            $orderItems = json_decode($order['items'], true);
-                                            echo implode(", ", array_column($orderItems, 'name')); 
+                                            $stmt = $pdo->prepare("SELECT oi.quantity, m.name FROM order_items oi JOIN menus m ON oi.menu_id = m.id WHERE oi.order_id = ?");
+                                            $stmt->execute([$order['id']]);
+                                            $orderItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                                            $itemNames = array_map(function($item) {
+                                                return $item['name'] . ' x' . $item['quantity'];
+                                            }, $orderItems);
+                                            echo implode(", ", $itemNames);
                                         ?>
                                     </td>
                                     <td><span class="status-<?php echo $order['status']; ?>"><?php echo getOrderStatusText($order['status']); ?></span></td>

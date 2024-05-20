@@ -101,8 +101,8 @@ if ($table_id <= 0) {
             <p>&copy; 2023 ชื่อร้านอาหาร</p>
         </div>
     </footer>
+
     <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://kit.fontawesome.com/your-font-awesome-kit.js"></script>
     <script src="node_modules/@fortawesome/fontawesome-free/js/all.min.js"></script>
 </body>
 

@@ -67,7 +67,7 @@ $menus = $pdo->query("SELECT m.*, ms.status_name FROM menus m JOIN menu_statuses
                         <?php foreach ($menus as $menu): ?>
                             <div class="col-md-4 mb-3">
                                 <div class="card">
-                                    <img src="<?php echo htmlspecialchars($menu['image']); ?>" class="card-img-top" alt="Image">
+                                        <img src="<?php echo htmlspecialchars($menu['image']); ?>" class="card-img-top" alt="Image">
                                     <div class="card-body">
                                         <h5 class="card-title"><?php echo htmlspecialchars($menu['name']); ?></h5>
                                         <p class="card-text"><?php echo htmlspecialchars($menu['description']); ?></p>

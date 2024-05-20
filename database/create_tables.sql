@@ -33,8 +33,10 @@ CREATE TABLE IF NOT EXISTS roles (
 -- สร้างตาราง tables
 CREATE TABLE IF NOT EXISTS tables (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    table_number INT NOT NULL,
     max_capacity INT NOT NULL,
-    status ENUM('available', 'occupied') DEFAULT 'available'
+    status ENUM('available', 'occupied') DEFAULT 'available',
+    qr_code VARCHAR(255)
 );
 
 -- สร้างตาราง menu_statuses
@@ -51,6 +53,7 @@ CREATE TABLE IF NOT EXISTS menus (
     price DECIMAL(10, 2) NOT NULL,
     image VARCHAR(255),
     status_id INT,
+    category VARCHAR(50),
     FOREIGN KEY (status_id) REFERENCES menu_statuses(id)
 );
 
@@ -82,3 +85,10 @@ CREATE TABLE IF NOT EXISTS activity_logs (
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES admins(id) -- หรือ employees(id) ตาม user_role
 );
+
+-- เพิ่มสถานะเมนู
+INSERT INTO menu_statuses (status_name) VALUES ('Available'), ('Unavailable');
+
+ALTER TABLE menus ADD COLUMN category VARCHAR(50) AFTER status_id;
+
+
