@@ -10,13 +10,17 @@ if (!isset($_SESSION['kitchen_logged_in']) && !isset($_SESSION['admin_logged_in'
 }
 
 // ดึงคำสั่งซื้อที่ยังไม่ได้ทำ พร้อมหมายเลขโต๊ะ
-$pendingOrders = $pdo->query("
-    SELECT o.*, t.table_number 
-    FROM orders o 
-    JOIN tables t ON o.table_id = t.id 
-    WHERE o.status IN ('pending', 'preparing') 
-    ORDER BY o.order_time DESC
-")->fetchAll(); // เรียงตามเวลาล่าสุด
+try {
+    $pendingOrders = $pdo->query("
+        SELECT o.*, t.table_number 
+        FROM orders o 
+        JOIN tables t ON o.table_id = t.id 
+        WHERE o.status IN ('pending', 'preparing') 
+        ORDER BY o.order_time DESC
+    ")->fetchAll(); // เรียงตามเวลาล่าสุด
+} catch (Exception $e) {
+    die("Error fetching orders: " . $e->getMessage());
+}
 
 // ฟังก์ชันสำหรับแสดงสถานะคำสั่งซื้อ
 function getOrderStatusText($status) {
@@ -84,26 +88,30 @@ function getOrderStatusText($status) {
                         <tbody>
                             <?php foreach ($pendingOrders as $order) { ?>
                                 <tr>
-                                    <td><?php echo $order['id']; ?></td>
-                                    <td><?php echo $order['table_number']; ?></td>
-                                    <td><?php echo $order['order_time']; ?></td>
+                                    <td><?php echo htmlspecialchars($order['id']); ?></td>
+                                    <td><?php echo htmlspecialchars($order['table_number']); ?></td>
+                                    <td><?php echo htmlspecialchars($order['order_time']); ?></td>
                                     <td>
                                         <?php 
-                                            $stmt = $pdo->prepare("SELECT oi.quantity, m.name FROM order_items oi JOIN menus m ON oi.menu_id = m.id WHERE oi.order_id = ?");
-                                            $stmt->execute([$order['id']]);
-                                            $orderItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                                            $itemNames = array_map(function($item) {
-                                                return $item['name'] . ' x' . $item['quantity'];
-                                            }, $orderItems);
-                                            echo implode(", ", $itemNames);
+                                            try {
+                                                $stmt = $pdo->prepare("SELECT oi.quantity, m.name FROM order_items oi JOIN menus m ON oi.menu_id = m.id WHERE oi.order_id = ?");
+                                                $stmt->execute([$order['id']]);
+                                                $orderItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                                                $itemNames = array_map(function($item) {
+                                                    return htmlspecialchars($item['name']) . ' x' . htmlspecialchars($item['quantity']);
+                                                }, $orderItems);
+                                                echo implode(", ", $itemNames);
+                                            } catch (Exception $e) {
+                                                echo "Error fetching order items: " . $e->getMessage();
+                                            }
                                         ?>
                                     </td>
-                                    <td><span class="status-<?php echo $order['status']; ?>"><?php echo getOrderStatusText($order['status']); ?></span></td>
+                                    <td><span class="status-<?php echo htmlspecialchars($order['status']); ?>"><?php echo getOrderStatusText($order['status']); ?></span></td>
                                     <td>
-                                        <a href="update_order_status.php?order_id=<?php echo $order['id']; ?>&status=preparing" class="btn btn-warning btn-sm <?php echo ($order['status'] == 'preparing') ? 'disabled' : ''; ?>">
+                                        <a href="update_order_status.php?order_id=<?php echo htmlspecialchars($order['id']); ?>&status=preparing" class="btn btn-warning btn-sm <?php echo ($order['status'] == 'preparing') ? 'disabled' : ''; ?>">
                                             <i class="bi bi-clock-history"></i> กำลังเตรียม
                                         </a>
-                                        <a href="update_order_status.php?order_id=<?php echo $order['id']; ?>&status=completed" class="btn btn-success btn-sm <?php echo ($order['status'] == 'completed') ? 'disabled' : ''; ?>">
+                                        <a href="update_order_status.php?order_id=<?php echo htmlspecialchars($order['id']); ?>&status=completed" class="btn btn-success btn-sm <?php echo ($order['status'] == 'completed') ? 'disabled' : ''; ?>">
                                             <i class="bi bi-check-circle"></i> เสร็จสิ้น
                                         </a>
                                     </td>

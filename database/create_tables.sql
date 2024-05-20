@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS roles (
 -- สร้างตาราง tables
 CREATE TABLE IF NOT EXISTS tables (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    table_number INT NOT NULL,
+    table_number INT NOT NULL UNIQUE,
     max_capacity INT NOT NULL,
     status ENUM('available', 'occupied') DEFAULT 'available',
     qr_code VARCHAR(255)
@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS orders (
     id INT AUTO_INCREMENT PRIMARY KEY,
     table_id INT,
     order_time DATETIME DEFAULT CURRENT_TIMESTAMP,
-    status ENUM('pending', 'completed', 'cancelled') DEFAULT 'pending',
+    status ENUM('pending', 'preparing', 'completed', 'cancelled') DEFAULT 'pending',
     FOREIGN KEY (table_id) REFERENCES tables(id)
 );
 
@@ -83,12 +83,13 @@ CREATE TABLE IF NOT EXISTS activity_logs (
     user_role ENUM('admin', 'employee') NOT NULL,
     action VARCHAR(255) NOT NULL,
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES admins(id) -- หรือ employees(id) ตาม user_role
+    FOREIGN KEY (user_id) REFERENCES admins(id) -- จะต้องจัดการกรณี user_role = 'employee'
 );
 
 -- เพิ่มสถานะเมนู
 INSERT INTO menu_statuses (status_name) VALUES ('Available'), ('Unavailable');
 
-ALTER TABLE menus ADD COLUMN category VARCHAR(50) AFTER status_id;
-
-
+-- เพิ่มตัวอย่างข้อมูลในตาราง tables
+INSERT INTO tables (table_number, max_capacity, status, qr_code) VALUES
+(1, 4, 'available', 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=http://localhost/food-ordering-system/menu.php?table_id=1'),
+(2, 4, 'available', 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=http://localhost/food-ordering-system/menu.php?table_id=2');
