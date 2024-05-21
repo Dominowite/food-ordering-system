@@ -29,7 +29,7 @@ food-ordering-system/
 │   ├── logout.php
 │   └── register.php
 ├── cart.php
-├── checkout.php
+
 ├── confirm_order.php
 ├── css/
 │   └── style.css
