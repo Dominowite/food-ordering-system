@@ -26,10 +26,10 @@ $orderCount = $pdo->query("SELECT COUNT(*) FROM orders WHERE status = 'pending'"
 </head>
 <body>
 
-    <!-- แถบเมนูด้านข้าง -->
-    <sidebar class="sidebar">
+    <!-- แถบเมนู -->
+    <navbar class="navbar">
         <?php include 'layout/navbar.php' ?>
-    </sidebar>
+    </navbar>
 
     <div class="main-content">
         <div class="container mt-3">

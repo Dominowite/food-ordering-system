@@ -5,7 +5,7 @@ include 'includes/functions.php';
 $data = json_decode(file_get_contents('php://input'), true);
 
 if (isset($data['table_id'], $data['items']) && is_array($data['items'])) {
-    $table_id = $data['table_id'];
+    $table_id = intval($data['table_id']);
 
     $stmt = $pdo->prepare("SELECT id FROM tables WHERE table_number = ?");
     $stmt->execute([$table_id]);
@@ -21,13 +21,16 @@ if (isset($data['table_id'], $data['items']) && is_array($data['items'])) {
             $order_id = $pdo->lastInsertId();
 
             foreach ($data['items'] as $item) {
-                if (isset($item['id'], $item['quantity']) && $item['quantity'] > 0) {
+                if (isset($item['id'], $item['quantity']) && intval($item['quantity']) > 0) {
+                    $menu_id = intval($item['id']);
+                    $quantity = intval($item['quantity']);
+
                     // Verify that the menu item exists and is available
                     $menuStmt = $pdo->prepare("SELECT id FROM menus WHERE id = ? AND status_id = (SELECT id FROM menu_statuses WHERE status_name = 'Available')");
-                    $menuStmt->execute([$item['id']]);
+                    $menuStmt->execute([$menu_id]);
                     if ($menuStmt->fetch()) {
                         $stmt = $pdo->prepare("INSERT INTO order_items (order_id, menu_id, quantity) VALUES (?, ?, ?)");
-                        $stmt->execute([$order_id, $item['id'], $item['quantity']]);
+                        $stmt->execute([$order_id, $menu_id, $quantity]);
                     } else {
                         throw new Exception("Invalid menu item ID or item not available");
                     }

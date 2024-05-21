@@ -36,7 +36,7 @@
                         <a class="nav-link" href="../menu/manage_menus.php">จัดการเมนูอาหาร</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="../admin/view_orders.php">ดูคำสั่งซื้อ</a>
+                        <a class="nav-link" href="../order/view_orders.php">ดูคำสั่งซื้อ</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="../tables/manage_tables.php">จัดการโต๊ะ</a>

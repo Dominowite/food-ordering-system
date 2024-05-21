@@ -1,7 +1,7 @@
 <?php
 session_start();
 include '../includes/db.php';
-include '../admin/functions.php';
+include '../includes/functions.php';
 
 // ตรวจสอบการเข้าสู่ระบบของแอดมิน
 if (!isset($_SESSION['admin_logged_in'])) {
@@ -9,9 +9,12 @@ if (!isset($_SESSION['admin_logged_in'])) {
     exit();
 }
 
+
+
 // ดึงข้อมูลเมนูอาหารจากฐานข้อมูล
 $menus = $pdo->query("SELECT m.*, ms.status_name FROM menus m JOIN menu_statuses ms ON m.status_id = ms.id")->fetchAll();
 ?>
+
 
 <!DOCTYPE html>
 <html lang="th">
@@ -22,7 +25,6 @@ $menus = $pdo->query("SELECT m.*, ms.status_name FROM menus m JOIN menu_statuses
     <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="../admin/css/style.css">
     <style>
-        /* ปรับแต่งการ์ด */
         .card {
             margin-bottom: 20px;
         }
@@ -30,7 +32,6 @@ $menus = $pdo->query("SELECT m.*, ms.status_name FROM menus m JOIN menu_statuses
             max-height: 200px;
             object-fit: cover;
         }
-        /* ปรับแต่งช่องค้นหา */
         .search-container {
             display: flex;
             justify-content: space-between;
@@ -45,6 +46,13 @@ $menus = $pdo->query("SELECT m.*, ms.status_name FROM menus m JOIN menu_statuses
         .status-unavailable {
             color: red !important;
         }
+        .toggle-status-container {
+            display: flex;
+            align-items: center;
+        }
+        .toggle-status-label {
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
@@ -53,6 +61,18 @@ $menus = $pdo->query("SELECT m.*, ms.status_name FROM menus m JOIN menu_statuses
     <nav class="sidebar">
         <?php include '../admin/layout/navbar.php'; ?>
     </nav>
+
+    <?php // แสดงข้อความแจ้งเตือน
+if (isset($_SESSION['success_message'])) {
+    echo '<div class="alert alert-success">' . $_SESSION['success_message'] . '</div>';
+    unset($_SESSION['success_message']);
+}
+
+if (isset($_SESSION['error_message'])) {
+    echo '<div class="alert alert-danger">' . $_SESSION['error_message'] . '</div>';
+    unset($_SESSION['error_message']);
+}
+?>
 
     <div class="main-content">
         <div class="container mt-3">
@@ -67,21 +87,18 @@ $menus = $pdo->query("SELECT m.*, ms.status_name FROM menus m JOIN menu_statuses
                         <?php foreach ($menus as $menu): ?>
                             <div class="col-md-4 mb-3">
                                 <div class="card">
-                                        <img src="<?php echo htmlspecialchars($menu['image']); ?>" class="card-img-top" alt="Image">
+                                    <img src="<?php echo htmlspecialchars($menu['image']); ?>" class="card-img-top" alt="Image">
                                     <div class="card-body">
                                         <h5 class="card-title"><?php echo htmlspecialchars($menu['name']); ?></h5>
                                         <p class="card-text"><?php echo htmlspecialchars($menu['description']); ?></p>
                                         <p class="card-text text-primary"><?php echo htmlspecialchars($menu['price']); ?> บาท</p>
                                         <p class="card-text">
-                                            <small class="text-muted 
-                                                <?php 
-                                                if (strtolower($menu['status_name']) == 'available') {
-                                                    echo 'status-available';
-                                                } else {
-                                                    echo 'status-unavailable';
-                                                } ?>
-                                            ">
-                                                สถานะ: <?php echo htmlspecialchars($menu['status_name']); ?>
+                                            <small class="text-muted">
+                                                สถานะ:
+                                                <div class="toggle-status-container">
+                                                    <input type="checkbox" class="status-toggle" data-id="<?php echo $menu['id']; ?>" <?php echo (strtolower($menu['status_name']) == 'available') ? 'checked' : ''; ?> data-toggle="toggle" data-on="Available" data-off="Unavailable" data-onstyle="success" data-offstyle="danger">
+                                                    <span class="toggle-status-label <?php echo (strtolower($menu['status_name']) == 'available') ? 'status-available' : 'status-unavailable'; ?>"><?php echo (strtolower($menu['status_name']) == 'available') ? 'Available' : 'Unavailable'; ?></span>
+                                                </div>
                                             </small>
                                         </p>
                                         <a href="edit_menu.php?id=<?php echo $menu['id']; ?>" class="btn btn-primary btn-sm">แก้ไข</a>
@@ -97,7 +114,7 @@ $menus = $pdo->query("SELECT m.*, ms.status_name FROM menus m JOIN menu_statuses
     </div>
 
     <script src="../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../node_modules/@fortawesome/fontawesome-free/js/all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-toggle/js/bootstrap-toggle.min.js"></script>
     <script>
         // JavaScript สำหรับการค้นหาเมนูอาหาร
         document.getElementById('searchInput').addEventListener('input', function() {
@@ -111,6 +128,35 @@ $menus = $pdo->query("SELECT m.*, ms.status_name FROM menus m JOIN menu_statuses
                 } else {
                     card.style.display = 'none';
                 }
+            });
+        });
+
+        // JavaScript สำหรับการเปิด-ปิดสถานะเมนู
+        document.querySelectorAll('.status-toggle').forEach(function(toggle) {
+            toggle.addEventListener('change', function() {
+                let menuId = this.dataset.id;
+                let status = this.checked ? 'Available' : 'Unavailable';
+                let label = this.nextElementSibling;
+                label.textContent = status;
+                label.className = this.checked ? 'toggle-status-label status-available' : 'toggle-status-label status-unavailable';
+
+                fetch('update_menu_status.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ id: menuId, status: status })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success) {
+                        alert('เกิดข้อผิดพลาดในการอัปเดตสถานะเมนู');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('เกิดข้อผิดพลาดในการอัปเดตสถานะเมนู');
+                });
             });
         });
     </script>

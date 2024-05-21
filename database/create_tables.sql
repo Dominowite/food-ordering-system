@@ -101,7 +101,12 @@ CREATE TABLE IF NOT EXISTS order_history (
 -- เพิ่มสถานะเมนู
 INSERT INTO menu_statuses (status_name) VALUES ('Available'), ('Unavailable');
 
--- เพิ่มตัวอย่างข้อมูลในตาราง tables
-INSERT INTO tables (table_number, max_capacity, status, qr_code) VALUES
-(1, 4, 'available', 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=http://localhost/food-ordering-system/menu.php?table_id=1'),
-(2, 4, 'available', 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=http://localhost/food-ordering-system/menu.php?table_id=2');
+CREATE TABLE receipts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT,
+    receipt_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    total_amount DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES orders(id)
+);
+
+
