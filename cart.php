@@ -1,7 +1,3 @@
-<?php
-include 'includes/db.php';
-include 'includes/functions.php';
-?>
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -10,8 +6,6 @@ include 'includes/functions.php';
     <title>ตะกร้าสินค้า</title>
     <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/menu.css">
-    <link rel="stylesheet" href="node_modules/@fortawesome/fontawesome-free/css/all.min.css">
 </head>
 <body>
 <section id="cart" class="py-5">
@@ -36,6 +30,8 @@ include 'includes/functions.php';
                 <div class="text-end">
                     <h4>ราคารวม: <span id="totalPrice">0</span> บาท</h4>
                     <button class="btn btn-success" id="checkout">ยืนยันคำสั่งซื้อ</button>
+                    <!-- ปุ่มไปยังหน้าคำสั่งซื้อของฉัน -->
+                    <a href="user_orders.php" id="viewOrder" class="btn btn-primary mt-2">ไปยังคำสั่งซื้อของฉัน</a>
                 </div>
             </div>
         </div>
@@ -43,83 +39,38 @@ include 'includes/functions.php';
 </section>
 
 <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-<script src="node_modules/@fortawesome/fontawesome-free/js/all.min.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const cart = JSON.parse(localStorage.getItem('cart')) || [];
-        const cartItems = document.getElementById('cartItems');
-        const totalPriceElement = document.getElementById('totalPrice');
-        let totalPrice = 0;
-
-        function updateCart() {
-            cartItems.innerHTML = '';
-            totalPrice = 0;
-
-            cart.forEach(item => {
-                const itemTotal = item.price * item.quantity;
-                totalPrice += itemTotal;
-
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${item.name}</td>
-                    <td>${item.price}</td>
-                    <td>${item.quantity}</td>
-                    <td>${itemTotal}</td>
-                    <td>
-                        <button class="btn btn-danger btn-sm remove-item" data-id="${item.id}">ลบ</button>
-                    </td>
-                `;
-                cartItems.appendChild(row);
-            });
-
-            totalPriceElement.textContent = totalPrice.toFixed(2);
+    document.getElementById('checkout').addEventListener('click', function() {
+        if (cart.length === 0) {
+            alert('ตะกร้าว่างเปล่า');
+            return;
         }
 
-        updateCart();
+        const order = {
+            table_id: <?php echo isset($_GET['table_id']) ? intval($_GET['table_id']) : 0; ?>,
+            items: cart,
+            total: totalPrice
+        };
 
-        document.querySelectorAll('.remove-item').forEach(button => {
-            button.addEventListener('click', function() {
-                const id = this.dataset.id;
-                const index = cart.findIndex(cartItem => cartItem.id === id);
-
-                if (index !== -1) {
-                    cart.splice(index, 1);
-                    localStorage.setItem('cart', JSON.stringify(cart));
-                    updateCart();
-                }
-            });
-        });
-
-        document.getElementById('checkout').addEventListener('click', function() {
-            if (cart.length === 0) {
-                alert('ตะกร้าว่างเปล่า');
-                return;
+        fetch('checkout.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(order)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                localStorage.removeItem('cart');
+                alert('คำสั่งซื้อของคุณถูกยืนยันแล้ว');
+            } else {
+                alert('เกิดข้อผิดพลาดในการยืนยันคำสั่งซื้อ: ' + data.message);
             }
-
-            const order = {
-                table_id: <?php echo isset($_GET['table_id']) ? intval($_GET['table_id']) : 0; ?>,
-                items: cart,
-                total: totalPrice
-            };
-
-            fetch('checkout.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(order)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('คำสั่งซื้อของคุณถูกยืนยันแล้ว');
-                    localStorage.removeItem('cart');
-                    window.location.href = 'index.php';
-                } else {
-                    alert('เกิดข้อผิดพลาดในการยืนยันคำสั่งซื้อ');
-                }
-            })
-            .catch(error => console.error('Error:', error));
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('เกิดข้อผิดพลาดในการยืนยันคำสั่งซื้อ');
         });
     });
 </script>

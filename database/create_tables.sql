@@ -86,6 +86,18 @@ CREATE TABLE IF NOT EXISTS activity_logs (
     FOREIGN KEY (user_id) REFERENCES admins(id) -- จะต้องจัดการกรณี user_role = 'employee'
 );
 
+-- สร้างตาราง order_history
+CREATE TABLE IF NOT EXISTS order_history (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT,
+    table_id INT,
+    status ENUM('pending', 'preparing', 'completed', 'cancelled') DEFAULT 'pending',
+    order_time DATETIME,
+    completion_time DATETIME,
+    FOREIGN KEY (order_id) REFERENCES orders(id),
+    FOREIGN KEY (table_id) REFERENCES tables(id)
+);
+
 -- เพิ่มสถานะเมนู
 INSERT INTO menu_statuses (status_name) VALUES ('Available'), ('Unavailable');
 

@@ -15,6 +15,8 @@ if (isset($_GET['order_id'])) {
     $status = $_GET['status'] ?? 'pending';
 
     try {
+        $pdo->beginTransaction();
+
         // อัพเดตสถานะของคำสั่งซื้อในฐานข้อมูล
         $stmt = $pdo->prepare("UPDATE orders SET status = ? WHERE id = ?");
         if (!$stmt->execute([$status, $order_id])) {
@@ -26,10 +28,25 @@ if (isset($_GET['order_id'])) {
             throw new Exception("No order was updated, possibly the order ID does not exist.");
         }
 
+        // ถ้าสถานะเป็น 'completed' เก็บข้อมูลคำสั่งซื้อไปยังตาราง order_history
+        if ($status === 'completed') {
+            // คัดลอกคำสั่งซื้อที่เสร็จสิ้นไปยังตาราง order_history
+            $stmt = $pdo->prepare("
+                INSERT INTO order_history (order_id, table_id, status, order_time, completion_time)
+                SELECT id, table_id, status, order_time, NOW() FROM orders WHERE id = ?
+            ");
+            if (!$stmt->execute([$order_id])) {
+                throw new Exception("Failed to copy order to order_history: " . implode(", ", $stmt->errorInfo()));
+            }
+        }
+
+        $pdo->commit();
+
         // เปลี่ยนเส้นทางกลับไปยังแดชบอร์ด
         header('Location: dashboard.php');
         exit();
     } catch (Exception $e) {
+        $pdo->rollBack();
         die("Error: " . $e->getMessage());
     }
 } else {

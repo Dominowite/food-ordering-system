@@ -11,7 +11,6 @@ if ($table_id <= 0) {
 ?>
 <!DOCTYPE html>
 <html lang="th">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,7 +19,6 @@ if ($table_id <= 0) {
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="node_modules/@fortawesome/fontawesome-free/css/all.min.css">
 </head>
-
 <body>
     <!-- Hero Section -->
     <section class="hero text-white text-center bg-dark py-5">
@@ -43,8 +41,8 @@ if ($table_id <= 0) {
             <button class="btn btn-secondary mx-2">
                 <i class="fas fa-bell"></i> เรียกพนักงาน
             </button>
-            <button class="btn btn-success mx-2">
-                <i class="fas fa-money-bill-wave"></i> เก็บเงิน
+            <button class="btn btn-success mx-2" data-bs-toggle="modal" data-bs-target="#billModal">
+                <i class="fas fa-money-bill-wave"></i> แสดงบิล
             </button>
         </div>
 
@@ -95,6 +93,39 @@ if ($table_id <= 0) {
         </div>
     </section>
 
+    <!-- Modal สำหรับแสดงบิล -->
+    <div class="modal fade" id="billModal" tabindex="-1" aria-labelledby="billModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="billModalLabel">บิลของฉัน</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>ชื่อเมนู</th>
+                                <th>จำนวน</th>
+                                <th>ราคา</th>
+                                <th>รวม</th>
+                            </tr>
+                        </thead>
+                        <tbody id="billItems">
+                            <!-- รายการสินค้าในบิลจะแสดงที่นี่ -->
+                        </tbody>
+                    </table>
+                    <div class="text-end">
+                        <h4>ราคารวม: <span id="totalBillPrice">0</span> บาท</h4>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer class="bg-light py-3 mt-5">
         <div class="container text-center">
@@ -104,6 +135,31 @@ if ($table_id <= 0) {
 
     <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="node_modules/@fortawesome/fontawesome-free/js/all.min.js"></script>
-</body>
+    <script>
+        function renderBill() {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const billItems = document.getElementById('billItems');
+            billItems.innerHTML = '';
+            let totalBillPrice = 0;
 
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                totalBillPrice += itemTotal;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${item.quantity}</td>
+                    <td>${item.price}</td>
+                    <td>${itemTotal.toFixed(2)}</td>
+                `;
+                billItems.appendChild(row);
+            });
+
+            document.getElementById('totalBillPrice').textContent = totalBillPrice.toFixed(2);
+        }
+
+        document.querySelector('.btn-success').addEventListener('click', renderBill);
+    </script>
+</body>
 </html>

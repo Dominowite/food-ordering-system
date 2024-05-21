@@ -45,16 +45,24 @@ try {
             text-align: center;
         }
         .cart-icon {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: #007bff;
-            color: white;
-            border-radius: 50%;
-            padding: 15px;
-            cursor: pointer;
-            z-index: 1000;
-        }
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 50%;
+    padding: 15px;
+    cursor: pointer;
+    z-index: 1000;
+    display: block; /* ตรวจสอบว่าไม่ได้ถูกซ่อน */
+}
+
+@media (max-width: 768px) {
+    .cart-icon {
+        right: 34px;
+        bottom: 23px;
+    }
+}
         .cart-icon .badge {
             position: absolute;
             top: -5px;
@@ -74,6 +82,13 @@ try {
             right: 20px;
             z-index: 1050;
         }
+        .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999; /* ให้แสดงหน้าสุด */
+        padding: 3px;
+    }
     </style>
 </head>
 <body>
@@ -85,10 +100,9 @@ try {
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
                 <li class="nav-item active">
-                    <a class="nav-link" href="#">หน้าแรก</a>
-                </li>
+                <a class="nav-link" href="index.php?table_id=<?php echo htmlspecialchars($table_id); ?>">หน้าแรก</a>                </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">เมนู</a>
+                <a class="nav-link" href="menu.php?table_id=<?php echo htmlspecialchars($table_id); ?>">เมนู</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">ติดต่อ</a>
@@ -133,38 +147,40 @@ try {
     </div>
 
     <div class="modal fade" id="cartModal" tabindex="-1" aria-labelledby="cartModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="cartModalLabel">ตะกร้าสินค้า</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cartModalLabel">ตะกร้าสินค้า</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ชื่อเมนู</th>
+                            <th>จำนวน</th>
+                            <th>ราคา</th>
+                            <th>รวม</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="cart-items">
+                        <!-- รายการสินค้าในตะกร้าจะแสดงที่นี่ -->
+                    </tbody>
+                </table>
+                <div class="text-end">
+                    <h5>ราคารวม: <span id="total-price">0</span> บาท</h5>
                 </div>
-                <div class="modal-body">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>ชื่อเมนู</th>
-                                <th>จำนวน</th>
-                                <th>ราคา</th>
-                                <th>รวม</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody id="cart-items">
-                            <!-- รายการสินค้าในตะกร้าจะแสดงที่นี่ -->
-                        </tbody>
-                    </table>
-                    <div class="text-end">
-                        <h5>ราคารวม: <span id="total-price">0</span> บาท</h5>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
-                    <button type="button" class="btn btn-primary" id="confirm-order">ยืนยันการสั่งซื้อ</button>
-                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+                <button type="button" class="btn btn-primary" id="confirm-order">ยืนยันการสั่งซื้อ</button>
+                <a href="index.php?table_id=<?php echo htmlspecialchars($table_id); ?>" id="go-home" class="btn btn-success" style="display: none;">ไปยังหน้าแรก</a>
             </div>
         </div>
     </div>
+</div>
+
 
     <div class="toast-container position-fixed top-0 end-0 p-3">
         <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
@@ -181,166 +197,166 @@ try {
     <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="node_modules/@fortawesome/fontawesome-free/js/all.min.js"></script>
     <script>
-        function increaseQuantity(button) {
-            let input = button.previousElementSibling;
-            input.value = parseInt(input.value) + 1;
-        }
+    function increaseQuantity(button) {
+        let input = button.previousElementSibling;
+        input.value = parseInt(input.value) + 1;
+    }
 
-        function decreaseQuantity(button) {
-            let input = button.nextElementSibling;
-            if (parseInt(input.value) > 1) {
-                input.value = parseInt(input.value) - 1;
+    function decreaseQuantity(button) {
+        let input = button.nextElementSibling;
+        if (parseInt(input.value) > 1) {
+            input.value = parseInt(input.value) - 1;
+        }
+    }
+
+    document.getElementById('searchInput').addEventListener('input', function() {
+        let input = document.getElementById('searchInput').value.toLowerCase();
+        let menuItems = document.querySelectorAll('.menu-item');
+
+        menuItems.forEach(function(item) {
+            let itemName = item.querySelector('.card-title').innerText.toLowerCase();
+            if (itemName.includes(input)) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
             }
-        }
-
-        document.getElementById('searchInput').addEventListener('input', function() {
-            let input = document.getElementById('searchInput').value.toLowerCase();
-            let menuItems = document.querySelectorAll('.menu-item');
-
-            menuItems.forEach(function(item) {
-                let itemName = item.querySelector('.card-title').innerText.toLowerCase();
-                if (itemName.includes(input)) {
-                    item.style.display = 'block';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
         });
+    });
 
-        document.querySelectorAll('.add-to-cart').forEach(button => {
-            button.addEventListener('click', function() {
-                const id = this.dataset.id;
-                const name = this.dataset.name;
-                const price = this.dataset.price;
-                const quantity = this.previousElementSibling.querySelector('.quantity-input').value;
-                const item = { id, name, price, quantity: parseInt(quantity) };
+    document.querySelectorAll('.add-to-cart').forEach(button => {
+        button.addEventListener('click', function() {
+            const id = this.dataset.id;
+            const name = this.dataset.name;
+            const price = this.dataset.price;
+            const quantity = this.previousElementSibling.querySelector('.quantity-input').value;
+            const item = { id, name, price, quantity: parseInt(quantity) };
 
-                let cart = JSON.parse(localStorage.getItem('cart')) || [];
-
-                const index = cart.findIndex(cartItem => cartItem.id === id);
-                if (index === -1) {
-                    cart.push(item);
-                } else {
-                    cart[index].quantity += item.quantity;
-                }
-
-                localStorage.setItem('cart', JSON.stringify(cart));
-                showToast(`${name} จำนวน ${quantity} ถูกเพิ่มลงในตะกร้าแล้ว`);
-                updateCartIcon();
-            });
-        });
-
-        function showToast(message) {
-            const toastElement = document.getElementById('liveToast');
-            const toastBody = toastElement.querySelector('.toast-body');
-            toastBody.textContent = message;
-            const toast = new bootstrap.Toast(toastElement);
-            toast.show();
-        }
-
-        function updateCartIcon() {
-            const cart = JSON.parse(localStorage.getItem('cart')) || [];
-            const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
-            document.getElementById('cart-count').textContent = cartCount;
-        }
-
-        function renderCartItems() {
-            const cart = JSON.parse(localStorage.getItem('cart')) || [];
-            const cartItems = document.getElementById('cart-items');
-            cartItems.innerHTML = '';
-            let totalPrice = 0;
-
-            cart.forEach(item => {
-                const itemTotal = item.price * item.quantity;
-                totalPrice += itemTotal;
-
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${item.name}</td>
-                    <td>
-                        <button class="btn btn-outline-secondary btn-sm" onclick="decreaseCartItemQuantity('${item.id}')">-</button>
-                        <span>${item.quantity}</span>
-                        <button class="btn btn-outline-secondary btn-sm" onclick="increaseCartItemQuantity('${item.id}')">+</button>
-                    </td>
-                    <td>${item.price}</td>
-                    <td>${itemTotal}</td>
-                    <td><button class="btn btn-danger btn-sm" onclick="removeCartItem('${item.id}')">ลบ</button></td>
-                `;
-                cartItems.appendChild(row);
-            });
-
-            document.getElementById('total-price').textContent = totalPrice.toFixed(2);
-        }
-
-        function increaseCartItemQuantity(id) {
-            const cart = JSON.parse(localStorage.getItem('cart')) || [];
-            const index = cart.findIndex(item => item.id === id);
-            if (index !== -1) {
-                cart[index].quantity++;
-                localStorage.setItem('cart', JSON.stringify(cart));
-                renderCartItems();
-                updateCartIcon();
-            }
-        }
-
-        function decreaseCartItemQuantity(id) {
-            const cart = JSON.parse(localStorage.getItem('cart')) || [];
-            const index = cart.findIndex(item => item.id === id);
-            if (index !== -1 && cart[index].quantity > 1) {
-                cart[index].quantity--;
-                localStorage.setItem('cart', JSON.stringify(cart));
-                renderCartItems();
-                updateCartIcon();
-            }
-        }
-
-        function removeCartItem(id) {
             let cart = JSON.parse(localStorage.getItem('cart')) || [];
-            cart = cart.filter(item => item.id !== id);
+
+            const index = cart.findIndex(cartItem => cartItem.id === id);
+            if (index === -1) {
+                cart.push(item);
+            } else {
+                cart[index].quantity += item.quantity;
+            }
+
+            localStorage.setItem('cart', JSON.stringify(cart));
+            showToast(`${name} จำนวน ${quantity} ถูกเพิ่มลงในตะกร้าแล้ว`);
+            updateCartIcon();
+        });
+    });
+
+    function showToast(message) {
+        const toastElement = document.getElementById('liveToast');
+        const toastBody = toastElement.querySelector('.toast-body');
+        toastBody.textContent = message;
+        const toast = new bootstrap.Toast(toastElement);
+        toast.show();
+    }
+
+    function updateCartIcon() {
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
+        document.getElementById('cart-count').textContent = cartCount;
+    }
+
+    function renderCartItems() {
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const cartItems = document.getElementById('cart-items');
+        cartItems.innerHTML = '';
+        let totalPrice = 0;
+
+        cart.forEach(item => {
+            const itemTotal = item.price * item.quantity;
+            totalPrice += itemTotal;
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${item.name}</td>
+                <td>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="decreaseCartItemQuantity('${item.id}')">-</button>
+                    <span>${item.quantity}</span>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="increaseCartItemQuantity('${item.id}')">+</button>
+                </td>
+                <td>${item.price}</td>
+                <td>${itemTotal}</td>
+                <td><button class="btn btn-danger btn-sm" onclick="removeCartItem('${item.id}')">ลบ</button></td>
+            `;
+            cartItems.appendChild(row);
+        });
+
+        document.getElementById('total-price').textContent = totalPrice.toFixed(2);
+    }
+
+    function increaseCartItemQuantity(id) {
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const index = cart.findIndex(item => item.id === id);
+        if (index !== -1) {
+            cart[index].quantity++;
             localStorage.setItem('cart', JSON.stringify(cart));
             renderCartItems();
             updateCartIcon();
         }
+    }
 
-        document.querySelector('.cart-icon').addEventListener('click', renderCartItems);
+    function decreaseCartItemQuantity(id) {
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const index = cart.findIndex(item => item.id === id);
+        if (index !== -1 && cart[index].quantity > 1) {
+            cart[index].quantity--;
+            localStorage.setItem('cart', JSON.stringify(cart));
+            renderCartItems();
+            updateCartIcon();
+        }
+    }
 
-        document.addEventListener('DOMContentLoaded', updateCartIcon);
+    function removeCartItem(id) {
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        cart = cart.filter(item => item.id !== id);
+        localStorage.setItem('cart', JSON.stringify(cart));
+        renderCartItems();
+        updateCartIcon();
+    }
 
-        document.getElementById('confirm-order').addEventListener('click', function() {
-            const cart = JSON.parse(localStorage.getItem('cart')) || [];
-            if (cart.length > 0) {
-                // ดึง table_id จาก URL
-                const tableId = <?php echo $table_id; ?>;
-                // ส่งข้อมูลคำสั่งซื้อไปยัง server
-                fetch('confirm_order.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ table_id: tableId, items: cart })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        localStorage.removeItem('cart');
-                        updateCartIcon();
-                        renderCartItems();
-                        showToast('ยืนยันการสั่งซื้อสำเร็จ');
-                        // ปิด modal
-                        const cartModal = new bootstrap.Modal(document.getElementById('cartModal'));
-                        cartModal.hide();
-                    } else {
-                        showToast('เกิดข้อผิดพลาดในการยืนยันคำสั่งซื้อ: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showToast('เกิดข้อผิดพลาดในการยืนยันคำสั่งซื้อ');
-                });
-            } else {
-                showToast('ตะกร้าสินค้าว่าง');
-            }
-        });
-    </script>
+    document.querySelector('.cart-icon').addEventListener('click', renderCartItems);
+
+    document.addEventListener('DOMContentLoaded', updateCartIcon);
+
+    document.getElementById('confirm-order').addEventListener('click', function() {
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        if (cart.length > 0) {
+            // ดึง table_id จาก URL
+            const tableId = <?php echo $table_id; ?>;
+            // ส่งข้อมูลคำสั่งซื้อไปยัง server
+            fetch('confirm_order.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ table_id: tableId, items: cart })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    localStorage.removeItem('cart');
+                    updateCartIcon();
+                    renderCartItems();
+                    showToast('ยืนยันการสั่งซื้อสำเร็จ');
+                    // แสดงปุ่ม "ไปยังหน้าแรก"
+                    document.getElementById('go-home').style.display = 'block';
+                } else {
+                    showToast('เกิดข้อผิดพลาดในการยืนยันคำสั่งซื้อ: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('เกิดข้อผิดพลาดในการยืนยันคำสั่งซื้อ');
+            });
+        } else {
+            showToast('ตะกร้าสินค้าว่าง');
+        }
+    });
+</script>
+
 </body>
 </html>
