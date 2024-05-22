@@ -98,8 +98,7 @@ CREATE TABLE IF NOT EXISTS order_history (
     FOREIGN KEY (table_id) REFERENCES tables(id)
 );
 
--- เพิ่มสถานะเมนู
-INSERT INTO menu_statuses (status_name) VALUES ('Available'), ('Unavailable');
+
 
 CREATE TABLE receipts (
     id INT AUTO_INCREMENT PRIMARY KEY,
