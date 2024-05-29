@@ -58,6 +58,7 @@ $tables = $pdo->query("SELECT * FROM tables ORDER BY id ASC")->fetchAll();
                         </td>
                         <td>
                             <img src="<?php echo htmlspecialchars($table['qr_code']); ?>" alt="QR Code" width="50" height="50">
+                            <a href="download_qrcode.php?url=<?php echo urlencode($table['qr_code']); ?>" class="btn btn-secondary btn-sm mt-1">ดาวน์โหลด</a>
                         </td>
                         <td>
                             <a href="edit_table.php?id=<?php echo $table['id']; ?>" class="btn btn-warning btn-sm">แก้ไข</a>

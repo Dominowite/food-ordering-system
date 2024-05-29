@@ -11,8 +11,8 @@ if (!isset($_SESSION['admin_logged_in'])) {
 
 // การเพิ่มโต๊ะ
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $table_number = $_POST['table_number'];
-    $max_capacity = $_POST['max_capacity'];
+    $table_number = intval($_POST['table_number']);
+    $max_capacity = intval($_POST['max_capacity']);
     $status = $_POST['status'];
 
     try {
@@ -26,8 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         // สร้าง URL สำหรับ QR Code ที่ลิงก์ไปยังหน้าเลือกเมนู
-        $baseUrl = 'http://' . $_SERVER['HTTP_HOST'] . str_replace('/tables', '', dirname($_SERVER['PHP_SELF'])) . '/index.php';
-        $tableData = $baseUrl . '?table_id=' . $table_number;
+        $baseUrl = 'http://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . '/../index.php';
+        $tableData = $baseUrl . '?table_number=' . $table_number;
         $qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' . urlencode($tableData);
 
         // บันทึกข้อมูลโต๊ะในฐานข้อมูล

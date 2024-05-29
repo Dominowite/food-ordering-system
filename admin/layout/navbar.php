@@ -48,6 +48,12 @@
                         <a class="nav-link" href="../admin/manage_admins.php">จัดการแอดมิน</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="../staff/dashboard.php">แดชบอร์ดพนักงาน</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="../kitchen/dashboard.php">แดชบอร์ดครัว</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="../admin/logout.php">ออกจากระบบ</a>
                     </li>
                 </ul>

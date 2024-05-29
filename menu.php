@@ -2,11 +2,23 @@
 include 'includes/db.php';
 include 'includes/functions.php';
 
-$table_id = isset($_GET['table_id']) ? intval($_GET['table_id']) : 0;
+// รับค่า table_number จาก URL
+$table_number = isset($_GET['table_number']) ? intval($_GET['table_number']) : 0;
 
-if ($table_id <= 0) {
-    die("รหัสโต๊ะไม่ถูกต้อง");
+if ($table_number <= 0) {
+    die("หมายเลขโต๊ะไม่ถูกต้อง");
 }
+
+// ดึง table_id จาก table_number
+$stmt = $pdo->prepare("SELECT id FROM tables WHERE table_number = ?");
+$stmt->execute([$table_number]);
+$table = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$table) {
+    die("หมายเลขโต๊ะไม่ถูกต้อง");
+}
+
+$table_id = $table['id'];
 
 // ดึงข้อมูลเมนูอาหารจากฐานข้อมูล
 try {
@@ -45,24 +57,24 @@ try {
             text-align: center;
         }
         .cart-icon {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background-color: #007bff;
-    color: white;
-    border-radius: 50%;
-    padding: 15px;
-    cursor: pointer;
-    z-index: 1000;
-    display: block; /* ตรวจสอบว่าไม่ได้ถูกซ่อน */
-}
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 50%;
+            padding: 15px;
+            cursor: pointer;
+            z-index: 1000;
+            display: block;
+        }
 
-@media (max-width: 768px) {
-    .cart-icon {
-        right: 34px;
-        bottom: 23px;
-    }
-}
+        @media (max-width: 768px) {
+            .cart-icon {
+                right: 34px;
+                bottom: 23px;
+            }
+        }
         .cart-icon .badge {
             position: absolute;
             top: -5px;
@@ -83,12 +95,12 @@ try {
             z-index: 1050;
         }
         .toast-container {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 9999; /* ให้แสดงหน้าสุด */
-        padding: 3px;
-    }
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999; /* ให้แสดงหน้าสุด */
+            padding: 3px;
+        }
     </style>
 </head>
 <body>
@@ -100,9 +112,10 @@ try {
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
                 <li class="nav-item active">
-                <a class="nav-link" href="index.php?table_id=<?php echo htmlspecialchars($table_id); ?>">หน้าแรก</a>                </li>
+                    <a class="nav-link" href="index.php?table_number=<?php echo htmlspecialchars($table_number); ?>">หน้าแรก</a>
+                </li>
                 <li class="nav-item">
-                <a class="nav-link" href="menu.php?table_id=<?php echo htmlspecialchars($table_id); ?>">เมนู</a>
+                    <a class="nav-link" href="menu.php?table_number=<?php echo htmlspecialchars($table_number); ?>">เมนู</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">ติดต่อ</a>
@@ -112,7 +125,7 @@ try {
     </nav>
 
     <div class="container mt-5">
-        <h1 class="text-center">เมนูอาหาร - โต๊ะ: <?php echo htmlspecialchars($table_id); ?></h1>
+        <h1 class="text-center">เมนูอาหาร - โต๊ะ: <?php echo htmlspecialchars($table_number); ?></h1>
 
         <div class="search-container">
             <input type="text" id="searchInput" class="form-control" placeholder="ค้นหาเมนูอาหาร">
@@ -122,7 +135,7 @@ try {
             <?php foreach ($menus as $menu): ?>
                 <div class="col-md-4 mb-3 menu-item">
                     <div class="card">
-                        <img src="/food-ordering-system/img/<?php echo htmlspecialchars($menu['image']); ?>" alt="<?php echo htmlspecialchars($menu['name']); ?>" class="card-img-top">
+                        <img src="<?php echo htmlspecialchars($menu['image']); ?>" alt="<?php echo htmlspecialchars($menu['name']); ?>" class="card-img-top">
                         <div class="card-body">
                             <h5 class="card-title"><?php echo htmlspecialchars($menu['name']); ?></h5>
                             <p class="card-text"><?php echo htmlspecialchars($menu['description']); ?></p>
@@ -147,40 +160,39 @@ try {
     </div>
 
     <div class="modal fade" id="cartModal" tabindex="-1" aria-labelledby="cartModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="cartModalLabel">ตะกร้าสินค้า</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>ชื่อเมนู</th>
-                            <th>จำนวน</th>
-                            <th>ราคา</th>
-                            <th>รวม</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody id="cart-items">
-                        <!-- รายการสินค้าในตะกร้าจะแสดงที่นี่ -->
-                    </tbody>
-                </table>
-                <div class="text-end">
-                    <h5>ราคารวม: <span id="total-price">0</span> บาท</h5>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cartModalLabel">ตะกร้าสินค้า</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
-                <button type="button" class="btn btn-primary" id="confirm-order">ยืนยันการสั่งซื้อ</button>
-                <a href="index.php?table_id=<?php echo htmlspecialchars($table_id); ?>" id="go-home" class="btn btn-success" style="display: none;">ไปยังหน้าแรก</a>
+                <div class="modal-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ชื่อเมนู</th>
+                                <th>จำนวน</th>
+                                <th>ราคา</th>
+                                <th>รวม</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="cart-items">
+                            <!-- รายการสินค้าในตะกร้าจะแสดงที่นี่ -->
+                        </tbody>
+                    </table>
+                    <div class="text-end">
+                        <h5>ราคารวม: <span id="total-price">0</span> บาท</h5>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+                    <button type="button" class="btn btn-primary" id="confirm-order">ยืนยันการสั่งซื้อ</button>
+                    <a href="index.php?table_number=<?php echo htmlspecialchars($table_number); ?>" id="go-home" class="btn btn-success" style="display: none;">ไปยังหน้าแรก</a>
+                </div>
             </div>
         </div>
     </div>
-</div>
-
 
     <div class="toast-container position-fixed top-0 end-0 p-3">
         <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
@@ -356,7 +368,6 @@ try {
             showToast('ตะกร้าสินค้าว่าง');
         }
     });
-</script>
-
+    </script>
 </body>
 </html>

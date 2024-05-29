@@ -1,0 +1,27 @@
+.receipt-container {
+    margin: 10px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    flex: 1 1 calc(33.333% - 20px);
+    box-sizing: border-box;
+}
+.receipt-header {
+    margin-bottom: 20px;
+}
+.receipt-items table {
+    width: 100%;
+}
+.receipt-items th, .receipt-items td {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+}
+.receipt-footer {
+    text-align: right;
+    margin-top: 20px;
+}
+.receipt-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 19, 2024 at 11:27 AM
+-- Generation Time: May 28, 2024 at 09:15 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -67,14 +67,6 @@ CREATE TABLE `employees` (
   `salary` decimal(10,2) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `employees`
---
-
-INSERT INTO `employees` (`id`, `name`, `lastname`, `job_title`, `username`, `password`, `status`, `salary`) VALUES
-(1, 'Thanaporn', 'Phuangthong', 'staff', 'test1', '$2y$10$O9hwwUHdEU4td9eVm3x58.PixfEdVanEax87ynkB5vHmTRpWGt8My', 'inactive', 15000.00),
-(3, 'Thanaporn1', 'Phuangthong1', 'kitchen', 'test2', '$2y$10$egGNwgL6kggkTh8hRvipF.CK67V/3M/08lCt9OSvbhYHbQ43AJg4m', 'active', 15000.00);
-
 -- --------------------------------------------------------
 
 --
@@ -90,6 +82,16 @@ CREATE TABLE `menus` (
   `status_id` int(11) DEFAULT NULL,
   `category` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `menus`
+--
+
+INSERT INTO `menus` (`id`, `name`, `description`, `price`, `image`, `status_id`, `category`) VALUES
+(34, 'ต้มยำกุ้ง', 'ซุปที่เผ็ดและเปรี้ยว พร้อมด้วยกุ้งตัวโต ตะไคร้ และพริก', 150.00, '../upload/img/unnamed.png', 1, 'single_dish'),
+(35, 'ผัดไทย	', 'เมนูเส้นจันทน์ผัดกับเครื่องปรุงรสแบบไทยๆ ใส่กุ้งแห้ง เต้าหู้ ถั่วงอก และไข่', 100.00, '../upload/img/Gemini_Generated_Image_p232i4p232i4p232.jpg', 1, 'single_dish'),
+(36, 'ผัดกะเพรา', 'เมนูจานด่วนที่อร่อยและทำง่าย ใช้เนื้อสัตว์ผัดกับใบกะเพรา พริก กระเทียม รสชาติเผ็ดร้อน', 80.00, '../upload/img/Gemini_Generated_Image_wgfegewgfegewgfe.jpg', 1, 'single_dish'),
+(37, 'แกงเขียวหวานไก่', 'แกงเขียวหวานไก่เป็นแกงที่มีรสชาติหวานและเผ็ดจากพริกเขียวและกะทิ', 120.00, '../upload/img/Gemini_Generated_Image_p232i3p232i3p232.jpg', 1, 'side_dish');
 
 -- --------------------------------------------------------
 
@@ -120,7 +122,23 @@ CREATE TABLE `orders` (
   `id` int(11) NOT NULL,
   `table_id` int(11) DEFAULT NULL,
   `order_time` datetime DEFAULT current_timestamp(),
-  `status` enum('pending','completed','cancelled') DEFAULT 'pending'
+  `status` enum('pending','preparing','completed') NOT NULL,
+  `payment_status` enum('pending','paid') DEFAULT 'pending'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `order_history`
+--
+
+CREATE TABLE `order_history` (
+  `id` int(11) NOT NULL,
+  `order_id` int(11) DEFAULT NULL,
+  `table_id` int(11) DEFAULT NULL,
+  `status` enum('pending','preparing','completed','cancelled') DEFAULT 'pending',
+  `order_time` datetime DEFAULT NULL,
+  `completion_time` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -134,6 +152,34 @@ CREATE TABLE `order_items` (
   `order_id` int(11) DEFAULT NULL,
   `menu_id` int(11) DEFAULT NULL,
   `quantity` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `receipts`
+--
+
+CREATE TABLE `receipts` (
+  `id` int(11) NOT NULL,
+  `order_id` int(11) DEFAULT NULL,
+  `receipt_date` datetime DEFAULT current_timestamp(),
+  `total_amount` decimal(10,2) NOT NULL,
+  `table_number` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `receipt_items`
+--
+
+CREATE TABLE `receipt_items` (
+  `id` int(11) NOT NULL,
+  `receipt_id` int(11) DEFAULT NULL,
+  `menu_id` int(11) DEFAULT NULL,
+  `quantity` int(11) NOT NULL,
+  `price` decimal(10,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -160,13 +206,6 @@ CREATE TABLE `tables` (
   `qr_code` varchar(255) DEFAULT NULL,
   `table_number` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `tables`
---
-
-INSERT INTO `tables` (`id`, `max_capacity`, `status`, `qr_code`, `table_number`) VALUES
-(23, 5, 'available', 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=http%3A%2F%2Flocalhost%2Ffood-ordering-system%2Fmenu.php%3Ftable_id%3D1', 1);
 
 --
 -- Indexes for dumped tables
@@ -216,11 +255,34 @@ ALTER TABLE `orders`
   ADD KEY `table_id` (`table_id`);
 
 --
+-- Indexes for table `order_history`
+--
+ALTER TABLE `order_history`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `order_id` (`order_id`),
+  ADD KEY `order_history_ibfk_2` (`table_id`);
+
+--
 -- Indexes for table `order_items`
 --
 ALTER TABLE `order_items`
   ADD PRIMARY KEY (`id`),
   ADD KEY `order_id` (`order_id`),
+  ADD KEY `menu_id` (`menu_id`);
+
+--
+-- Indexes for table `receipts`
+--
+ALTER TABLE `receipts`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `order_id` (`order_id`);
+
+--
+-- Indexes for table `receipt_items`
+--
+ALTER TABLE `receipt_items`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `receipt_id` (`receipt_id`),
   ADD KEY `menu_id` (`menu_id`);
 
 --
@@ -250,7 +312,7 @@ ALTER TABLE `activity_logs`
 -- AUTO_INCREMENT for table `admins`
 --
 ALTER TABLE `admins`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `employees`
@@ -262,7 +324,7 @@ ALTER TABLE `employees`
 -- AUTO_INCREMENT for table `menus`
 --
 ALTER TABLE `menus`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- AUTO_INCREMENT for table `menu_statuses`
@@ -274,13 +336,31 @@ ALTER TABLE `menu_statuses`
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=81;
+
+--
+-- AUTO_INCREMENT for table `order_history`
+--
+ALTER TABLE `order_history`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
 
 --
 -- AUTO_INCREMENT for table `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=82;
+
+--
+-- AUTO_INCREMENT for table `receipts`
+--
+ALTER TABLE `receipts`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=60;
+
+--
+-- AUTO_INCREMENT for table `receipt_items`
+--
+ALTER TABLE `receipt_items`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `roles`
@@ -292,7 +372,7 @@ ALTER TABLE `roles`
 -- AUTO_INCREMENT for table `tables`
 --
 ALTER TABLE `tables`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- Constraints for dumped tables
@@ -317,11 +397,31 @@ ALTER TABLE `orders`
   ADD CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`table_id`) REFERENCES `tables` (`id`);
 
 --
+-- Constraints for table `order_history`
+--
+ALTER TABLE `order_history`
+  ADD CONSTRAINT `order_history_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`),
+  ADD CONSTRAINT `order_history_ibfk_2` FOREIGN KEY (`table_id`) REFERENCES `tables` (`id`) ON DELETE SET NULL;
+
+--
 -- Constraints for table `order_items`
 --
 ALTER TABLE `order_items`
   ADD CONSTRAINT `order_items_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`),
   ADD CONSTRAINT `order_items_ibfk_2` FOREIGN KEY (`menu_id`) REFERENCES `menus` (`id`);
+
+--
+-- Constraints for table `receipts`
+--
+ALTER TABLE `receipts`
+  ADD CONSTRAINT `receipts_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`);
+
+--
+-- Constraints for table `receipt_items`
+--
+ALTER TABLE `receipt_items`
+  ADD CONSTRAINT `receipt_items_ibfk_1` FOREIGN KEY (`receipt_id`) REFERENCES `receipts` (`id`),
+  ADD CONSTRAINT `receipt_items_ibfk_2` FOREIGN KEY (`menu_id`) REFERENCES `menus` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

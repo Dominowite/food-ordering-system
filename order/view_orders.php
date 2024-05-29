@@ -56,28 +56,7 @@ foreach ($orders as $order) {
     <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="../node_modules/@fortawesome/fontawesome-free/css/all.min.css">
     <link rel="stylesheet" href="../css/style.css">
-    <style>
-        .receipt-container {
-            margin-bottom: 20px;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        .receipt-header {
-            margin-bottom: 20px;
-        }
-        .receipt-items table {
-            width: 100%;
-        }
-        .receipt-items th, .receipt-items td {
-            padding: 8px;
-            border-bottom: 1px solid #ddd;
-        }
-        .receipt-footer {
-            text-align: right;
-            margin-top: 20px;
-        }
-    </style>
+    <link rel="stylesheet" href="css/view_orders_style.css">
 </head>
 <body>
 
@@ -99,46 +78,48 @@ foreach ($orders as $order) {
                 <div class="tab-content" id="v-pills-tabContent">
                     <?php foreach ($groupedOrders as $table_number => $orders): ?>
                         <div class="tab-pane fade <?php echo $table_number == array_key_first($groupedOrders) ? 'show active' : ''; ?>" id="v-pills-<?php echo $table_number; ?>" role="tabpanel" aria-labelledby="v-pills-<?php echo $table_number; ?>-tab">
-                            <?php foreach ($orders as $order): ?>
-                            <div class="receipt-container">
-                                <div class="receipt-header">
-                                    <h5>รหัสคำสั่งซื้อ: <?php echo htmlspecialchars($order['order_id']); ?></h5>
-                                    <p>รหัสโต๊ะ: <?php echo htmlspecialchars($order['table_number']); ?></p>
-                                    <p>เวลาสั่งซื้อ: <?php echo htmlspecialchars($order['order_time']); ?></p>
-                                    <p>สถานะ: <span class="badge <?php echo getBadgeClass($order['status']); ?>"><?php echo htmlspecialchars($order['status']); ?></span></p>
-                                </div>
-                                <div class="receipt-items">
-                                    <table class="table table-bordered">
-                                        <thead>
-                                            <tr>
-                                                <th>รายการอาหาร</th>
-                                                <th>จำนวน</th>
-                                                <th>ราคา</th>
-                                                <th>รวม</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php 
-                                            $total = 0;
-                                            foreach ($order['items'] as $item): 
-                                                $itemTotal = $item['quantity'] * $item['price'];
-                                                $total += $itemTotal;
-                                            ?>
-                                            <tr>
-                                                <td><?php echo htmlspecialchars($item['name']); ?></td>
-                                                <td><?php echo htmlspecialchars($item['quantity']); ?></td>
-                                                <td><?php echo htmlspecialchars($item['price']); ?> บาท</td>
-                                                <td><?php echo htmlspecialchars(number_format($itemTotal, 2)); ?> บาท</td>
-                                            </tr>
-                                            <?php endforeach; ?>
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div class="receipt-footer text-end">
-                                    <h5>ราคารวม: <?php echo htmlspecialchars(number_format($total, 2)); ?> บาท</h5>
-                                </div>
+                            <div class="receipt-grid">
+                                <?php foreach ($orders as $order): ?>
+                                    <div class="receipt-container">
+                                        <div class="receipt-header">
+                                            <h5>รหัสคำสั่งซื้อ: <?php echo htmlspecialchars($order['order_id']); ?></h5>
+                                            <p>รหัสโต๊ะ: <?php echo htmlspecialchars($order['table_number']); ?></p>
+                                            <p>เวลาสั่งซื้อ: <?php echo htmlspecialchars($order['order_time']); ?></p>
+                                            <p>สถานะ: <span class="badge <?php echo getBadgeClass($order['status']); ?>"><?php echo htmlspecialchars($order['status']); ?></span></p>
+                                        </div>
+                                        <div class="receipt-items">
+                                            <table class="table table-bordered">
+                                                <thead>
+                                                    <tr>
+                                                        <th>รายการอาหาร</th>
+                                                        <th>จำนวน</th>
+                                                        <th>ราคา</th>
+                                                        <th>รวม</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php 
+                                                    $total = 0;
+                                                    foreach ($order['items'] as $item): 
+                                                        $itemTotal = $item['quantity'] * $item['price'];
+                                                        $total += $itemTotal;
+                                                    ?>
+                                                    <tr>
+                                                        <td><?php echo htmlspecialchars($item['name']); ?></td>
+                                                        <td><?php echo htmlspecialchars($item['quantity']); ?></td>
+                                                        <td><?php echo htmlspecialchars($item['price']); ?> บาท</td>
+                                                        <td><?php echo htmlspecialchars(number_format($itemTotal, 2)); ?> บาท</td>
+                                                    </tr>
+                                                    <?php endforeach; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="receipt-footer text-end">
+                                            <h5>ราคารวม: <?php echo htmlspecialchars(number_format($total, 2)); ?> บาท</h5>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
                             </div>
-                            <?php endforeach; ?>
                         </div>
                     <?php endforeach; ?>
                 </div>

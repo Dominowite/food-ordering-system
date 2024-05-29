@@ -3,13 +3,11 @@ session_start();
 include '../includes/db.php';
 include '../includes/functions.php';
 
-// ตรวจสอบการเข้าสู่ระบบของครัวหรือแอดมิน
 if (!isset($_SESSION['kitchen_logged_in']) && !isset($_SESSION['admin_logged_in'])) {
     header('Location: login.php');
     exit();
 }
 
-// ดึงคำสั่งซื้อที่ยังไม่ได้ทำ พร้อมหมายเลขโต๊ะ
 try {
     $pendingOrders = $pdo->query("
         SELECT o.*, t.table_number 
@@ -17,12 +15,11 @@ try {
         JOIN tables t ON o.table_id = t.id 
         WHERE o.status IN ('pending', 'preparing') 
         ORDER BY o.order_time DESC
-    ")->fetchAll(); // เรียงตามเวลาล่าสุด
+    ")->fetchAll();
 } catch (Exception $e) {
     die("Error fetching orders: " . $e->getMessage());
 }
 
-// ฟังก์ชันสำหรับแสดงสถานะคำสั่งซื้อ
 function getOrderStatusText($status) {
     switch ($status) {
         case 'pending':
@@ -44,7 +41,7 @@ function getOrderStatusText($status) {
     <title>แดชบอร์ดครัว</title>
     <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="../css/style.css"> 
+    <link rel="stylesheet" href="../css/style.css">
     <style>
         body {
             font-family: 'Kanit', sans-serif;
@@ -59,6 +56,10 @@ function getOrderStatusText($status) {
     </style>
 </head>
 <body>
+    <?php if (isset($_SESSION['admin_logged_in'])): ?>
+        <?php include '../admin/layout/navbar.php'; ?>
+    <?php endif; ?>
+
     <div class="container mt-4">
         <h1 class="text-center mb-4">แดชบอร์ดครัว</h1>
 
@@ -80,7 +81,7 @@ function getOrderStatusText($status) {
                                 <th>หมายเลข</th>
                                 <th>หมายเลขโต๊ะ</th>
                                 <th>เวลา</th>
-                                <th>รายการ</th> 
+                                <th>รายการ</th>
                                 <th>สถานะ</th>
                                 <th>การกระทำ</th>
                             </tr>
@@ -92,7 +93,7 @@ function getOrderStatusText($status) {
                                     <td><?php echo htmlspecialchars($order['table_number']); ?></td>
                                     <td><?php echo htmlspecialchars($order['order_time']); ?></td>
                                     <td>
-                                        <?php 
+                                        <?php
                                             try {
                                                 $stmt = $pdo->prepare("SELECT oi.quantity, m.name FROM order_items oi JOIN menus m ON oi.menu_id = m.id WHERE oi.order_id = ?");
                                                 $stmt->execute([$order['id']]);
